@@ -18,28 +18,25 @@ class ValidationHelper
         $checkAll = ValidatingArrayLoader::CHECK_ALL;
         list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll);
 
-        if (!$errors && !$publishErrors && !$warnings) {
-            $io->write('<info>' . $file . ' is valid</info>');
-        } elseif (!$errors && !$publishErrors) {
-            $io->writeError('<info>' . $file . ' is valid, but with a few warnings</info>');
-            $io->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
-        }  elseif (!$errors) {
-            $io->writeError('<info>' . $file . ' is valid for simple usage with composer but has</info>');
-            $io->writeError('<info>strict errors that make it unable to be published as a package:</info>');
-            $io->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
-        } else {
+        if ($errors){
             $io->writeError('<error>' . $file . ' is invalid, the following errors/warnings were found:</error>');
+        } elseif ($publishErrors) {
+            $io->writeError('<warning>Few strict errors were found during validation of ' . $file . '</warning>');
+            $io->writeError('<warning>These errors may result in unexpected behavior of installation process</warning>');
+            $io->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
+        } elseif ($warnings) {
+            $io->writeError('<warning>Few warnings were found during validation of ' . $file . '</warning>');
+            $io->writeError('<warning>These errors may result in unexpected behavior</warning>');
+            $io->writeError('<warning>of installation process</warning>');
+            $io->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
         }
 
-        $messages = array(
-            'error' => array_merge($errors, $publishErrors),
-            'warning' => $warnings,
-        );
+        foreach (array_merge($errors, $publishErrors) as $msg) {
+            $io->writeError('<error>' . $msg . '</error>');
+        }
 
-        foreach ($messages as $style => $msgs) {
-            foreach ($msgs as $msg) {
-                $io->writeError('<' . $style . '>' . $msg . '</' . $style . '>');
-            }
+        foreach ($warnings as $msg) {
+            $io->writeError('<warning>' . $msg . '</warning>');
         }
 
         return !$errors;

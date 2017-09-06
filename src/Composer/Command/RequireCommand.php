@@ -46,6 +46,7 @@ class RequireCommand extends InitCommand
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('no-suggest', null, InputOption::VALUE_NONE, 'Do not show package suggestions.'),
                 new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.'),
+                new InputOption('no-validate', null, InputOption::VALUE_NONE, 'Disables composer.json file validation.'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
                 new InputOption('update-with-dependencies', null, InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated with explicit dependencies.'),
@@ -91,9 +92,11 @@ EOT
             return 1;
         }
 
-        $validationHelper = new ValidationHelper();
-        if (!$validationHelper->validateComposerFile($file, $io)) {
-            return 0;
+        if (!$input->getOption('no-validate')) {
+            $validationHelper = new ValidationHelper();
+            if (!$validationHelper->validateComposerFile($file, $io)) {
+                return 0;
+            }
         }
 
         if (filesize($file) === 0) {
