@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Util\ValidationHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -88,6 +89,11 @@ EOT
             $io->writeError('<error>'.$file.' is not writable.</error>');
 
             return 1;
+        }
+
+        $validationHelper = new ValidationHelper();
+        if (!$validationHelper->validateComposerFile($file, $io)) {
+            return 0;
         }
 
         if (filesize($file) === 0) {
@@ -196,6 +202,8 @@ EOT
 
         return $status;
     }
+
+
 
     private function updateFileCleanly($json, array $new, $requireKey, $removeKey, $sortPackages)
     {
